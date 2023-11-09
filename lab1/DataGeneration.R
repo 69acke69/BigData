@@ -16,9 +16,14 @@ plot(xdata, f(xdata), type='l')
 arrows(0,0,w[1]/5,w[2]/5)
 
 points(x1,x2)
-
-
-
+##
+##
+##
+##
+#JAAAAAG ÄR TOKBAKIS. JAG GÅR HEM! VI LÖSER DET HÄR FRAMÖVER
+##
+###
+##
 for(i in 1:N) {
   yhat = w%*%X[i,]
   w = w + sign(yhat)%*%X[i,]
