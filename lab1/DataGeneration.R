@@ -12,19 +12,25 @@ plot(X[, 1], X[, 2], col = colors, pch = 16, main = "Scatter Plot with Different
 
 #Add ones
 X <- cbind(1,x1,x2)
+
 #Initial guess for weights
 w <- c(1,1,1)
 
 max_iter = 100
 for(j in 1:max_iter){
   misclassified <- 0
+  # Loop over the dataset
   for(i in 1:N){
+    
+    # Checks for misclassification
     if(sign(w%*%X[i,]) != y[i]) {
-      #misclassified !! Update weights!! w
+      
+      # Update weights!! w
       w <- w + y[i]%*% X[i,]
       misclassified <- misclassified + 1
     }
   }
+  # Checks if the algorithm has converged
   if(misclassified == 0) {
     cat("Converged in ",j)
     break
