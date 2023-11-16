@@ -74,7 +74,9 @@ line = lines(x_values, y_values, col = "green", lwd = 2)
 ```
 
 ## Task 2
+In this task we have implemented Ridge Regression and trained a predictive model with the Boston data. We have tested different values on the tuning parameter and with the help of a 10-fold-cross validation determined the performance of the parameters. 
 
+Extract the training and testing data
 ```{R, warning=FALSE, message=FALSE}
 library(MASS)
 data(Boston)
@@ -96,6 +98,11 @@ trainX <- as.matrix(trainX)
 testX <- as.matrix(testX)
 ```
 
+Implementation of Ridge Regression. With the inputs,
+trainX: Feature variables
+trainY: Target variable
+lambda: The parameter 
+
 ```{R, warning=FALSE, message=FALSE}
 # Solve the LS problem for the optimal weights
 ridge_reg <- function(trainX, trainY, lambda) { 
@@ -104,7 +111,13 @@ ridge_reg <- function(trainX, trainY, lambda) {
   w <- solve(t(trainX) %*% trainX + lambda * I) %*% t(trainX) %*% trainY
   return(w)
 }
+```
 
+Implementation of a function applying k-fold-cross-validation. 
+trainX: Feature variables
+trainY: Target variable
+k: How many times one wants to divied the training set into. 
+```{R, warning=FALSE, message=FALSE}
 # Function for doing k-fold cross-validation
 k_fold <- function(trainX, trainY, k) {
   
@@ -136,6 +149,11 @@ k_fold <- function(trainX, trainY, k) {
 }
 ```
 
+Determine which tuning parameter to use to obtain the best performance.
+Plot of the RMSE average vs tuning parameters. The tuning parameter with the 
+best performance has a circle around it. 
+Finally we have a estimated the performance of the model on the actual testing 
+set. 
 ```{R, warning=FALSE, message=FALSE}
 # Set the tuning parameters to loop through
 tuning_param = c(0, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1)
@@ -146,9 +164,7 @@ for (i in 1:length(tuning_param)) {
   rmse <- k_fold(trainX, trainY, 10)
   tuning_result_rmse[i] <- mean(rmse)
 }
-```
 
-```{R, warning=FALSE, message=FALSE}
 # Show the result
 plot(c(tuning_param),tuning_result_rmse,
      pch=0,col="red",cex=1,lwd=2,asp=1,
