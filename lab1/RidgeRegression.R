@@ -57,7 +57,7 @@ k_fold <- function(trainX, trainY, k) {
 }
 
 # Set the tuning parameters to loop through
-tuning_param = c(1e-6, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1)
+tuning_param = c(0, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1)
 tuning_result_rmse <- numeric(length(tuning_param))
 
 # Loop over the tuning parameters
@@ -67,11 +67,11 @@ for (i in 1:length(tuning_param)) {
 }
 
 # Show the result
-plot(c(log10(tuning_param)),tuning_result_rmse,
+plot(c(tuning_param),tuning_result_rmse,
      pch=0,col="red",cex=1,lwd=2,asp=1,
      xlab="Tuning parameter",ylab="RMSE average")
 best_res <- which.min(tuning_result_rmse)
-points(log10(tuning_param[best_res]), tuning_result_rmse[best_res], pch=1, lwd = 2, cex = 3)
+points(tuning_param[best_res], tuning_result_rmse[best_res], pch=1, lwd = 2, cex = 3)
 # Choose best parameter
 best_lambda <- tuning_param[best_res]
 print(best_lambda)
