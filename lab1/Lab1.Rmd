@@ -23,8 +23,6 @@ img {
 
 ## Task 1
 
-<<<<<<< HEAD
-
 In this task we have implemented the Perceptron algorithm in R. The algorithm has been used determine a decision boundary from data generated randomly between -1 and 1. The ensure the performance of the algorithm a visualization of the decision boundary has been made.
 
 ```{R, warning=FALSE, message=FALSE}
@@ -39,7 +37,8 @@ y <- ifelse(x2>x1,-1,1)
 
 #Plot the two different groups 
 colors <- ifelse(y == 1, "blue", "red")
-plot(X[, 1], X[, 2], col = colors, pch = 16, main = "Scatter Plot with Different Colors", xlab = "X1", ylab = "X2")
+plot(X[, 1], X[, 2], col = colors, pch = 16,
+     main = "Scatter Plot with Different Colors", xlab = "X1", ylab = "X2")
 
 #Add ones
 X <- cbind(1,x1,x2)
