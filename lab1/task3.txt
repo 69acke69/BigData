@@ -1,0 +1,12 @@
+For the last task, our objective was to train a logistic regression model using a LASSO penalty. This was done on some gene expression data of patents that had brain cancer in order to predict their sub type of cancer. 
+
+
+First, we loaded the data set from supplied files and the required packages. After doing this, we drew a random sample of 181 patients in the data set to use as training data for the model. 
+
+Then, we prepared the data sets by splitting the randomly selected patients into a training set and the rest into a testing set.
+
+This, was also done in a similar way for the target data, i.e. the data set containing the subtype of cancer of the patients. Also, for simplification we chose to make the types binary instead, so that "IDHmut-non-codel" is represented by a 0, and "IDHmut-codel" are 1's. 
+
+To train the model, we used the glmnet-package. Here, we used the cv.glmnet function in order to enable using 10-fold cross validation for training and deciding a specified best hyperparameter $\lambda$ for the model to use as LASSO-penalty.
+
+Lastly, we show the results from the model. This includes a plot over the misclassification rate versus $\lambda$, the genes with non-zero coefficients, i.e. the genes that are used by the model, and a confusion matrix along with the kappa statistic.
