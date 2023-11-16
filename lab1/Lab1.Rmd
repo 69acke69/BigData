@@ -1,6 +1,8 @@
 ---
 title: "lab1_markd"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "2023-11-16"
 ---
 
@@ -71,3 +73,163 @@ x_values <- seq(-1, 1, length.out = 100)
 y_values <- (-w[1] - w[2] * x_values) / w[3]
 line = lines(x_values, y_values, col = "green", lwd = 2)
 ```
+
+## Task 2
+
+```{R, warning=FALSE, message=FALSE}
+library(MASS)
+data(Boston)
+set.seed(2023)
+
+# Prepare the data in training and test sets
+train_indices <- sample(1:nrow(Boston), 400)
+
+train_data <- Boston[train_indices, ]
+test_data <- Boston[-train_indices, ]
+
+trainY <- train_data$medv
+trainX <- train_data[, !(names(train_data) %in% c("medv"))]
+
+testY <- test_data$medv
+testX <- test_data[,!(names(test_data) %in% c("medv"))]
+
+trainX <- as.matrix(trainX)
+testX <- as.matrix(testX)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Solve the LS problem for the optimal weights
+ridge_reg <- function(trainX, trainY, lambda) { 
+  p <- ncol(trainX)
+  I <- diag(p)
+  w <- solve(t(trainX) %*% trainX + lambda * I) %*% t(trainX) %*% trainY
+  return(w)
+}
+
+# Function for doing k-fold cross-validation
+k_fold <- function(trainX, trainY, k) {
+  
+  order <- sample(1:nrow(trainX))
+  num_points <- round(nrow(trainX)/k)
+  rmse <- numeric(k)
+  
+  for (fold in 0:(k-1)) {
+    # Determine the amount of folds to use
+    start_ind = fold*num_points+1
+    end_ind <- (fold+1)*num_points
+    
+    testing_idx <- order[start_ind:end_ind]
+    
+    # Obtain the sets of features
+    test_setX <- trainX[testing_idx,]
+    training_setX <- trainX[-testing_idx,]
+    
+    # Obtain the sets of targets
+    test_setY <- trainY[testing_idx]
+    training_setY <- trainY[-testing_idx]
+    
+    # Evaluate the model
+    predictions <- test_setX%*%ridge_reg(training_setX, training_setY, tuning_param[i])
+    # Calculate the root mean squared error
+    rmse[fold] <- sqrt(mean((predictions - test_setY)^2))
+  }
+  return(rmse)
+}
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Set the tuning parameters to loop through
+tuning_param = c(0, 0.00001, 0.0001, 0.001, 0.01, 0.1, 1)
+tuning_result_rmse <- numeric(length(tuning_param))
+
+# Loop over the tuning parameters
+for (i in 1:length(tuning_param)) {
+  rmse <- k_fold(trainX, trainY, 10)
+  tuning_result_rmse[i] <- mean(rmse)
+}
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Show the result
+plot(c(tuning_param),tuning_result_rmse,
+     pch=0,col="red",cex=1,lwd=2,asp=1,
+     xlab="Tuning parameter",ylab="RMSE average")
+best_res <- which.min(tuning_result_rmse)
+points(tuning_param[best_res], tuning_result_rmse[best_res], pch=1, lwd = 2, cex = 3)
+# Choose best parameter
+best_lambda <- tuning_param[best_res]
+cat('The best lambda ',best_lambda)
+
+# Estimate the model performance on the actual testing set
+w_reg <- ridge_reg(trainX, trainY, best_lambda)
+predictions <- testX%*%w_reg
+rmse <- sqrt(mean((predictions - testY)^2))
+cat("The performance of the model using the best lambda is:", rmse, "\n")
+```
+
+##Task3
+
+```{R, warning=FALSE, message=FALSE}
+library(MASS)
+library(glmnet)
+library(caret)
+# ----- Loading ----- #
+# Load the data from files
+gene_data <- read.table("GeneExpressionData.txt")
+meta_data <- read.table("MetaData.txt")
+
+# Draw 181 random samples from the gene data
+random_idx <- sample(1:ncol(gene_data), 181)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# ----- Feature data ----- #
+
+# Training data
+train_dataX <- as.matrix(gene_data[2:nrow(gene_data),random_idx])
+train_dataX <- apply(train_dataX, c(1, 2), as.numeric)
+
+# Testing data
+test_dataX <- as.matrix(gene_data[2:nrow(gene_data),-random_idx])
+test_dataX <- apply(test_dataX, c(1, 2), as.numeric)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# ----- Targets ----- #
+
+# Training data
+text_train_dataY <- meta_data$V31[random_idx]
+train_dataY <- ifelse(text_train_dataY == "IDHmut-non-codel", 0, 1)
+
+# Testing data
+text_test_dataY <- meta_data$V31[-random_idx]
+test_dataY <- ifelse(text_test_dataY == "IDHmut-non-codel", 0, 1)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# ----- Training ----- #
+
+# Train the model
+model <- cv.glmnet(x = t(train_dataX), 
+                y = train_dataY,
+                family = "binomial",
+                type.measure = "class",
+                alpha = 1,
+                nfolds = 10)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# ----- Evaluation ----- #
+# Show the plot over different lambdas
+plot(model)
+c <- coef(model, s = model$lambda.min)
+print(cbind(c@i,c@x))
+# Make predictions on the test set
+predictions <- as.numeric(predict(model, t(test_dataX), s = "lambda.min", type = "class"))
+# Evaluate the final model
+confusionMatrix(as.factor(predictions), as.factor(test_dataY))
+```
+
+
+
+
