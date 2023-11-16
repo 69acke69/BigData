@@ -46,7 +46,7 @@ model <- cv.glmnet(x = t(train_dataX),
 # ----- Evaluation ----- #
 # Show the plot over different lambdas
 plot(model)
-
+coef(model,s=model$lambda.min)
 # Make predictions on the test set
 predictions <- as.numeric(predict(model, t(test_dataX), s = "lambda.min", type = "class"))
 # Evaluate the final model

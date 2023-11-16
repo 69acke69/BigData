@@ -1,3 +1,32 @@
+---
+title: "lab1_markd"
+output: html_document
+date: "2023-11-16"
+---
+
+```{css, echo=FALSE}
+/* Set max height and scroll for code blocks */
+pre {
+  max-height: 500px;
+  overflow-y: auto;
+}
+/* Center the output images */
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+```
+
+
+## Task 1
+
+<<<<<<< HEAD
+
+In this task we have implemented the Perceptron algorithm in R. The algorithm has been used determine a decision boundary from data generated randomly between -1 and 1. The ensure the performance of the algorithm a visualization of the decision boundary has been made.
+
+```{R, warning=FALSE, message=FALSE}
+
 rm(list=ls())
 set.seed(201606)
 N <- 20
@@ -41,4 +70,4 @@ for(j in 1:max_iter){
 x_values <- seq(-1, 1, length.out = 100)
 y_values <- (-w[1] - w[2] * x_values) / w[3]
 line = lines(x_values, y_values, col = "green", lwd = 2)
-
+```
