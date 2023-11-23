@@ -1,51 +1,72 @@
+# Clear the workspace
 rm(list = ls())
 
 #--- generate the data ---#
+
+# Function to generate elliptical data
 DGP_ellipse <- function(N = 50, seed = 8312){
   set.seed(seed)
-  oval_fun <- function(x,a=1,b=0.5){b*sqrt(1-(x/a)^2)}
+  oval_fun <- function(x, a=1, b=0.5){b * sqrt(1 - (x / a)^2)}
+  
+  # Generate data for the first oval
   x11 = runif(N, -1, 1)
-  x12 = c(oval_fun(x11[1:(.5*N)]),-oval_fun(x11[(.5*N+1):N])) + rnorm(N, 0, 0.05)
+  x12 = c(oval_fun(x11[1:(.5 * N)]), -oval_fun(x11[(.5 * N + 1):N])) + rnorm(N, 0, 0.05)
   X = cbind(x11, x12)
+  
+  # Generate data for the second oval
   x21 = runif(N, -1.5, 1.5)
-  x22 = c(oval_fun(x21[1:(.5*N)],a=1.5,b=0.75),-oval_fun(x21[(.5*N+1):N],a=1.5,b=0.75)) + rnorm(N, 0, 0.05)
-  X = rbind(X, cbind(x21,x22))
-  Q = eigen(matrix(c(1,-4,-4,1),2,2))$vectors
-  X = X%*%Q
-  y = c(rep(1,N), rep(0, N))
+  x22 = c(oval_fun(x21[1:(.5 * N)], a = 1.5, b = 0.75), -oval_fun(x21[(.5 * N + 1):N], a = 1.5, b = 0.75)) + rnorm(N, 0, 0.05)
+  X = rbind(X, cbind(x21, x22))
+  
+  # Rotate the data
+  Q = eigen(matrix(c(1, -4, -4, 1), 2, 2))$vectors
+  X = X %*% Q
+  
+  # Create the response variable
+  y = c(rep(1, N), rep(0, N))
   d = cbind(y, X)
+  
   return(d)
 }
+
+# Generate elliptical data with 10 points
 N = 10
 d = DGP_ellipse(N)
-y = d[,1]
-X = d[,-1]
-# visualize
-plot(X, pch=20, col = y+2, xlab = "X1", ylab = "X2", asp = 1, cex = 3)
+y = d[, 1]
+X = d[, -1]
+
+# Visualize the generated data
+plot(X, pch = 20, col = y + 2, xlab = "X1", ylab = "X2", asp = 1, cex = 3)
+
 #--- generate the data OVER ---#
 
 #--- tr_te_split ---#
-id = sample(1:(2*N), N*0.2)
+
+# Randomly sample 20% of the data for testing
+id = sample(1:(2 * N), N * 0.2)
 X_tr = X[-id, ]
 X_te = X[id, ]
 y_tr = y[-id]
 y_te = y[id]
+
 #--- tr_te_split OVER ---#
 
-# Hard code to find gram matrix 
+# Hard code to find the gram matrix 
+
+# Define a kernel function
 kernel_function <- function(x1, x2) {
   result <- (t(x1) %*% x2)^2
   return(result)
 }
 
-# Here we generate the Gram matrix
+# Calculate the Gram matrix for the training data set
 calculate_gram_matrix <- function(X) {
   n <- nrow(X)
   gram_matrix <- matrix(0, n, n)
   
   for (i in 1:n) {
     for (j in 1:n) {
-      gram_matrix[i, j] <- kernel_function(X[i,], X[j,])
+      gram_matrix[i, j] <- kernel_function(X[i, ], X[j, ])
     }
   }
   
@@ -55,35 +76,44 @@ calculate_gram_matrix <- function(X) {
 # Calculate the Gram matrix for the training data set
 K = calculate_gram_matrix(X_tr)
 N = dim(K)[1]
+
 # Generate the C matrix
-C = matrix(1/N, N, N)
-I = diag(1,N)
+C = matrix(1 / N, N, N)
+I = diag(1, N)
 
 # Obtains the centralized K* matrix
-KC = K - C%*%K - K%*%C + C%*%K%*%C
+KC = K - C %*% K - K %*% C + C %*% K %*% C
 
 # Get eigendecomposition of K*
 eig = eigen(KC)
+
 # Choose the third eigen vector/PC
-PC3_tr = eig$vectors[,3]
+PC3_tr = eig$vectors[, 3]
 lambda3_tr = eig$values[3]
-# Plot it
-plot(PC3_tr, rep(0,N), pch=20, col = y+2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
+
+# Plot the third principal component
+plot(PC3_tr, rep(0, N), pch = 20, col = y + 2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
 
 # Test on the testing data
+
+# Create a matrix for new observations
 X_new = matrix(0, N, 2)
+
 # Generate the vector of the kernel functions
 for (obs in 1:dim(X_te)[2]) {
   for (i in 1:N) {
-    X_new[i,obs] = kernel_function(X_tr[i,], X_te[obs,])
+    X_new[i, obs] = kernel_function(X_tr[i, ], X_te[obs, ])
   }
 }
-# Calculate the new observation
-x_new1 = lambda3_tr^-0.5*t(PC3_tr)%*%(I - C)%*%(X_new[,1] - 1/N*K%*%rep(1,N))
-x_new2 = lambda3_tr^-0.5*t(PC3_tr)%*%(I - C)%*%(X_new[,2] - 1/N*K%*%rep(1,N))
+
+# Calculate the new observations
+x_new1 = lambda3_tr^-0.5 * t(PC3_tr) %*% (I - C) %*% (X_new[, 1] - 1 / N * K %*% rep(1, N))
+x_new2 = lambda3_tr^-0.5 * t(PC3_tr) %*% (I - C) %*% (X_new[, 2] - 1 / N * K %*% rep(1, N))
+
 # Plot the new observations
-points(x_new1, 0, pch=20, col = 5, cex = 3)
-points(x_new2, 0, pch=20, col = 1, cex = 3)
+points(x_new1, 0, pch = 20, col = 5, cex = 3)
+points(x_new2, 0, pch = 20, col = 1, cex = 3)
+
 
 
 

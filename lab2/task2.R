@@ -1,20 +1,26 @@
+# Task 1: Kernel Ridge Regression using Gaussian Kernel
+
+# Load necessary libraries
 library(MASS)
 library(kernlab)
 
+# Clear the workspace
 rm(list = ls())
 
+# Load the Boston dataset
 X = data(Boston)
 
+# Define the Gaussian kernel function
 kernel_function <- function(x1, x2, sigma) {
-  result <- exp(-sqrt(sum((x1-x2)^2)) / 2*sigma^2)
+  result <- exp(-sqrt(sum((x1 - x2)^2)) / (2 * sigma^2))
   return(result)
 }
 
-# Here we generate the Gram matrix
-calculate_gram_matrix <- function(X,sigma) {
+# Function to calculate the Gram matrix
+calculate_gram_matrix <- function(X, sigma) {
   n <- nrow(X)
   gram_matrix <- matrix(0, n, n)
-
+  
   for (i in 1:n) {
     for (j in 1:n) {
       gram_matrix[i, j] <- kernel_function(X[i,], X[j,], sigma)
@@ -23,18 +29,20 @@ calculate_gram_matrix <- function(X,sigma) {
   return(gram_matrix)
 }
 
-predictKRR <- function(K,trainX, trainY, X, lambda, sigma) {
-  # Calc K
-  # Calc kappa-vector
+# Function to predict using Kernel Ridge Regression
+predictKRR <- function(K, trainX, trainY, X, lambda, sigma) {
+  # Calculate kappa-vector
   N = dim(K)[1]
   kappa <- matrix(0, nrow(K), 1)
   for (i in 1:N) {
-    kappa[i] = kernel_function(trainX[i,],X,sigma)
+    kappa[i] = kernel_function(trainX[i,], X, sigma)
   }
-  # predict y_hat
-  y_hat = trainY%*%solve(K + diag(lambda, nrow(K)))%*%kappa
+  
+  # Predict y_hat
+  y_hat = trainY %*% solve(K + diag(lambda, nrow(K))) %*% kappa
   return(y_hat)
 }
+
 # Divide into training and test sets
 set.seed(2020)
 train_indices <- sample(1:nrow(Boston), 400)
@@ -43,20 +51,28 @@ test_data <- Boston[-train_indices, ]
 trainY <- train_data$medv
 trainX <- train_data[, !(names(train_data) %in% c("medv"))]
 testY <- test_data$medv
-testX <- test_data[,!(names(test_data) %in% c("medv"))]
+testX <- test_data[, !(names(test_data) %in% c("medv"))]
 trainX <- as.matrix(trainX)
 testX <- as.matrix(testX)
 
-
-#Task 2!!!!
+# Task 2: Kernel Ridge Regression with specified lambda and sigma
 lambda = 0.1
 sigma = 0.001
-K = calculate_gram_matrix(trainX,sigma)
+
+# Calculate the Gram matrix
+K = calculate_gram_matrix(trainX, sigma)
+
+# Initialize prediction vector
 pred <- matrix(0, length(testY), 1)
+
+# Make predictions for each test data point
 for (k in 1:length(testY)) {
-  pred[k] = predictKRR(K,trainX,trainY,testX[k,],lambda,sigma)
+  pred[k] = predictKRR(K, trainX, trainY, testX[k,], lambda, sigma)
 }
-rmse = sqrt(mean((pred-testY)^2))
+
+# Calculate and print the root mean squared error (RMSE) on the test data
+rmse = sqrt(mean((pred - testY)^2))
+cat("RMSE on test data:", rmse, "\n")
 
 
 
