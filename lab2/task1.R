@@ -60,8 +60,16 @@ KC = K - C%*%K - K%*%C + C%*%K%*%C
 
 eig = eigen(KC)
 third = eig$vectors[3, ]
+y = matrix(0, N, 2)
+X_central = matrix(0, N, 2)
+X_central[,1] = X_tr[,1]-mean(X_tr[,1])
+X_central[,2] = X_tr[,2]-mean(X_tr[,2])
 
-y = third%*%(X_tr[3,]-colMeans(X_tr))
+
+
+
+
+y = t(third)%*%X_central
 
 plot(y)
 
