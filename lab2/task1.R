@@ -38,6 +38,7 @@ kernel_function <- function(x1, x2) {
   return(result)
 }
 
+# Here we generate the Gram matrix
 calculate_gram_matrix <- function(X) {
   n <- nrow(X)
   gram_matrix <- matrix(0, n, n)
@@ -51,19 +52,38 @@ calculate_gram_matrix <- function(X) {
   return(gram_matrix)
 }
 
+# Calculate the Gram matrix for the training data set
 K = calculate_gram_matrix(X_tr)
 N = dim(K)[1]
+# Generate the C matrix
 C = matrix(1/N, N, N)
+I = diag(1,N)
 
+# Obtains the centralized K* matrix
 KC = K - C%*%K - K%*%C + C%*%K%*%C
 
+# Get eigendecomposition of K*
 eig = eigen(KC)
+# Choose the third eigen vector/PC
+PC3_tr = eig$vectors[,3]
+lambda3_tr = eig$values[3]
+# Plot it
+plot(PC3_tr, rep(0,N), pch=20, col = y+2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
 
-third = eig$vectors[,2]
-
-plot(third, rep(0,N), pch=20, col = y+2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
-
-
+# Test on the testing data
+X_new = matrix(0, N, 2)
+# Generate the vector of the kernel functions
+for (obs in 1:dim(X_te)[2]) {
+  for (i in 1:N) {
+    X_new[i,obs] = kernel_function(X_tr[i,], X_te[obs,])
+  }
+}
+# Calculate the new observation
+x_new1 = lambda3_tr^-0.5*t(PC3_tr)%*%(I - C)%*%(X_new[,1] - 1/N*K%*%rep(1,N))
+x_new2 = lambda3_tr^-0.5*t(PC3_tr)%*%(I - C)%*%(X_new[,2] - 1/N*K%*%rep(1,N))
+# Plot the new observations
+points(x_new1, 0, pch=20, col = 5, cex = 3)
+points(x_new2, 0, pch=20, col = 1, cex = 3)
 
 
 
