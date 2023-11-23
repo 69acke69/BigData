@@ -14,7 +14,7 @@ kernel_function <- function(x1, x2, sigma) {
 calculate_gram_matrix <- function(X,sigma) {
   n <- nrow(X)
   gram_matrix <- matrix(0, n, n)
-  
+
   for (i in 1:n) {
     for (j in 1:n) {
       gram_matrix[i, j] <- kernel_function(X[i,], X[j,], sigma)
@@ -58,35 +58,111 @@ for (k in 1:length(testY)) {
 }
 rmse = sqrt(mean((pred-testY)^2))
 
-#Task 3!!!!
+
+
+# Task 3: Implementing k-fold cross-validation for kernel ridge regression
+
+# Function for doing k-fold cross-validation
+k_fold <- function(trainX, trainY, k, lambda, sigma) {
+  
+  # Shuffle indices to create random folds
+  order <- sample(1:nrow(trainX))
+  
+  # Calculate the number of points in each fold
+  num_points <- round(nrow(trainX) / k)
+  
+  # Initialize vector to store RMSE values for each fold
+  rmse <- numeric(k)
+  
+  for (fold in 0:(k - 1)) {
+    # Determine the start and end indices for the current fold
+    start_ind = fold * num_points + 1
+    end_ind <- (fold + 1) * num_points
+    
+    # Extract indices for the testing set
+    testing_idx <- order[start_ind:end_ind]
+    
+    # Split the dataset into training and testing sets
+    test_setX <- trainX[testing_idx,]
+    training_setX <- trainX[-testing_idx,]
+    
+    test_setY <- trainY[testing_idx]
+    training_setY <- trainY[-testing_idx]
+    
+    # Evaluate the model
+    K = calculate_gram_matrix(training_setX, sigma)
+    pred <- matrix(0, dim(test_setX)[1], 1)
+    for (i in 1:dim(test_setX)[1]) {
+      pred[i] = predictKRR(K, training_setX, training_setY, test_setX[i,], lambda, sigma)
+    }
+    
+    # Calculate the root mean squared error for the current fold
+    rmse[fold] <- sqrt(mean((pred - test_setY)^2))
+  }
+  return(rmse)
+}
+
 ## Normalize --------------------------
-X = data(Boston)
 
-means <- colMeans(trainX)
-sds <- apply(trainX, 2, sd)
+# Load the Boston dataset and normalize the features
+data(Boston)
+X <- scale(as.matrix(Boston))
 
-# Normalize the training set
-trainX <- sweep(trainX, 2, means, "-")
-trainX <- sweep(trainX, 2, sds, "/")
+# Set seed for reproducibility
+set.seed(2020)
 
-# Normalize the test set using the mean and standard deviation from the training set
-testX <- sweep(testX, 2, means, "-")
-testX <- sweep(testX, 2, sds, "/")
+# Randomly select 400 indices for training
+train_indices <- sample(1:nrow(X), 400)
+
+# Create training and testing datasets
+train_data <- X[train_indices, ]
+test_data <- X[-train_indices, ]
+
+# Extract target variables and feature matrices for training and testing
+trainY <- train_data[,14]
+trainX <- train_data[,1:13]
+testY <- test_data[,14]
+testX <- test_data[,1:13]
 
 # -------------------------------
-lambda = c(0.1,0.01,0.001)
-sigma = c(0.1,0.01,0.001)
 
-comb = expand.grid(lambda,sigma)
-rmse = matrix(0, nrow(comb), 1)
-for(i in 1:nrow(comb)){
-  K = calculate_gram_matrix(trainX,comb[i,2])
-  pred <- matrix(0, dim(testX)[1], 1)
-  for (k in 1:dim(testX)[1]) {
-    pred[k] = predictKRR(K,trainX,trainY,testX[k,],comb[i,1],comb[i,2])
-  }
-  rmse[i] = sqrt(mean((pred-testY)^2))
+# Define a grid of hyperparameters (lambda and sigma)
+lambda_values = c(0.1, 0.01, 0.001)
+sigma_values = c(0.1, 0.01, 0.001)
+
+# Generate all combinations of hyperparameters
+comb = expand.grid(lambda_values, sigma_values)
+
+# Initialize a matrix to store RMSE values for each combination
+rmse_comb = matrix(0, nrow(comb), 1)
+
+# Perform k-fold cross-validation for each hyperparameter combination
+for (i in 1:nrow(comb)) {
+  cat(i, "/", nrow(comb), "\r")
+  
+  # Call the k_fold function to get RMSE values for the current combination
+  rmse <- k_fold(trainX, trainY, 10, comb[i,1], comb[i,2])
+  
+  # Store the average RMSE for the current combination
+  rmse_comb[i] <- mean(rmse)
 }
-plot(rmse)
-#Best combination
-comb[3,]
+
+# Plot the RMSE values for each combination
+plot(rmse_comb)
+
+# Identify the index of the combination with the lowest RMSE
+idx <- which.min(rmse_comb)
+
+# Print the best combination of hyperparameters
+cat("Best combination: lambda =", comb[idx,1], ", sigma =", comb[idx,2], "\n")
+
+# Test the model with the best hyperparameters on the test data
+pred <- matrix(0, length(testY), 1)
+K = calculate_gram_matrix(trainX, comb[idx,2])
+for (k in 1:length(testY)) {
+  pred[k] = predictKRR(K, trainX, trainY, testX[k,], comb[idx,1], comb[idx,2])
+}
+
+# Calculate and print the RMSE on the test data
+rmse = sqrt(mean((pred - testY)^2))
+cat("RMSE on test data:", rmse, "\n")
