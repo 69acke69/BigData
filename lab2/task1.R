@@ -58,7 +58,15 @@ C = 1/N*ones %*% t(ones)
 
 KC = K - C%*%K - K%*%C + C%*%K%*%C
 
-#Now visualize KC 20X20?? MIGHT BE WRONG AF
+eig = eigen(KC)
+third = eig$vectors[3, ]
+
+y = third%*%(X_tr[3,]-colMeans(X_tr))
+
+plot(y)
+
+
+
 
 
 
