@@ -53,25 +53,15 @@ calculate_gram_matrix <- function(X) {
 
 K = calculate_gram_matrix(X_tr)
 N = dim(K)[1]
-ones= rep(1,N)
-C = 1/N*ones %*% t(ones)
+C = matrix(1/N, N, N)
 
 KC = K - C%*%K - K%*%C + C%*%K%*%C
 
 eig = eigen(KC)
-third = eig$vectors[3, ]
-y = matrix(0, N, 2)
-X_central = matrix(0, N, 2)
-X_central[,1] = X_tr[,1]-mean(X_tr[,1])
-X_central[,2] = X_tr[,2]-mean(X_tr[,2])
 
+third = eig$vectors[,2]
 
-
-
-
-y = t(third)%*%X_central
-
-plot(y)
+plot(third, rep(0,N), pch=20, col = y+2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
 
 
 
