@@ -11,3 +11,4 @@ for(i in sample(1:dim(train)[1], 25)){
   z <- matrix(as.numeric(train[i,257:2]),16,16,byrow=T)[,16:1]
   image(t(z),col=cus_col(256))
 }
+
