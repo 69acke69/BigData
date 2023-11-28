@@ -16,6 +16,7 @@ test <- X[-id, ]
 training$V1 <- as.factor(training$V1)
 test$V1 <- as.factor(test$V1)
 
+# Using linear SVM model -> vanilladot
 svm_1 <- ksvm(V1 ~ ., data = training, kernel = 'vanilladot',kpar=list(), C = 0.001)
 
 pred <- predict(svm_1, newdata = test[,-1])
@@ -30,10 +31,141 @@ print(paste("Accuracy:", accuracy))
 ### --------- TROR ATT DENNA GÖRA RÄTT! INTE SÄKER! börja kolla på cross validation 
 
 
+#----------------------------------------------------#
+#----------------------------------------------------#
+#----------------------------------------------------#
+
+
+# Convert all steps into a function for making cross-validation easier
+evaluate_model <- function(training_set, test_set, c, my_kernel, kpar) {
+  # Training the model using a chosen kernel and slackness parameter
+  svm_1 <- ksvm(V1 ~ ., data = training_set, kernel=my_kernel, kpar=kpar, C = c)
+  pred <- predict(svm_1, newdata = test_set[,-1])
+  # Convert probabilities to integer predictions
+  pred_int <- as.integer(factor(pred, levels = levels(test_set$V1)))
+  # Evaluate accuracy
+  accuracy <- sum(pred_int == as.integer(test_set$V1)) / length(test_set$V1)
+  
+  return(accuracy)
+}
+
+accuracy <- evaluate_model(training, test, c=0.001,
+                           my_kernel='vanilladot', kpar=list())
+print(accuracy)
+
+
+k_fold <- function(training, kfolds, C, kernel, kpar) {
+  
+  # Shuffle indices to create random folds
+  order <- sample(1:nrow(training))
+  
+  # Calculate the number of points in each fold
+  num_points <- round(nrow(training) / kfolds)
+  
+  # Initialize vector to store RMSE values for each fold
+  accuracies <- numeric(kfolds)
+  
+  for (fold in 0:(kfolds - 1)) {
+    cat("CV loop:", fold+1, '/', kfolds,'\r')
+    # Determine the start and end indices for the current fold
+    start_ind = fold * num_points + 1
+    end_ind <- (fold + 1) * num_points
+    
+    # Extract indices for the testing set
+    test_idx <- order[start_ind:end_ind]
+    
+    # Split the dataset into training and testing sets
+    test_set <- training[test_idx,]
+    training_set <- training[-test_idx,]
+    
+    
+    training_set$V1 <- as.factor(training_set$V1)
+    test_set$V1 <- as.factor(test_set$V1)
+    
+    # Evaluate the model
+    acc <- evaluate_model(training, test, c=C, my_kernel=kernel, kpar=kpar)
+    accuracies[fold] <- acc
+  }
+  return(accuracies)
+}
+
+# Cross validation in order to obtain the optimal slackness parameter
+slackness <- c(0.0001, 0.0005, 0.001, 0.005, 0.1, 1)
+kparams <- list(type='vanilladot', kpar=list())
+accuracies <- numeric(length(slackness))
+for (i in 1:length(slackness)) {
+  cat("\n", i, "/", length(slackness), "\n")
+  ave_acc <- mean(k_fold(training,
+                         kfolds=10,
+                         slackness[i], 
+                         kernel=kparams$type,
+                         kpar=kparams$kpar
+                         )
+                  )
+  accuracies[i] <- ave_acc
+}
+# Plot the results
+plot(log10(slackness), accuracies)
+best_C <- slackness[which.max(accuracies)]
+cat("Best slackness parameter was: C =", best_C)
 
 
 
+# Evaluate the model on the true test set
+accuracy <- evaluate_model(training,
+                           test,
+                           c=best_C,
+                           my_kernel=kparams$type,
+                           kpar=kparams$kpar
+                           )
+cat("The accuracy of the model on the test set was:", accuracy)
 
+
+
+#----------------------------------------------------#
+#----------------------------------------------------#
+#----------------------------------------------------#
+
+
+# Task 3.2: Do the same but using a nonlinear kernel
+
+ 
+# TAKES LONG TIME TO TRAIN! about ~3min per combination :(
+slackness <- c(0.005, 0.1, 1)
+sigmas <- c(0.005, 0.1, 1)
+combination = expand.grid(C=slackness, sigma=sigmas)
+
+
+# Here we train using the rbf-kernel 
+accuracies <- numeric(nrow(combination))
+for (i in 1:nrow(combination)) {
+  cat(i, "/", nrow(combination), "\n")
+  ave_acc <- mean(k_fold(training,
+                         kfolds=10,
+                         C=combination$C[i],
+                         kernel='rbfdot',
+                         kpar=list(combination$sigma[i])
+                         )
+                  )
+  
+  accuracies[i] <- ave_acc
+}
+
+plot(1:nrow(combination), accuracies)
+best <- combination[which.max(accuracies),]
+cat("Best parameters were: C =", best$C, ", sigma =", best$sigma)
+
+
+# Evaluate the model on the true test set
+accuracy <- evaluate_model(training,
+                           test,
+                           c=best$C,
+                           my_kernel='rbfdot',
+                           kpar=list(best$sigma)
+                           )
+
+
+cat("The accuracy of the model on the test set was:", accuracy)
 
 
 
