@@ -1,0 +1,38 @@
+---
+title: "Statistical Learning, LAB 2"
+output:
+  pdf_document: default
+  html_document: default
+date: "TBA"
+author: "Gustav Felländer(gufe0008), Axel Eriksson(axer0005)"
+---
+
+```{css, echo=FALSE}
+/* Set max height and scroll for code blocks */
+pre {
+  max-height: 500px;
+  overflow-y: auto;
+}
+/* Center the output images */
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+```
+
+
+## Task 1 About Kernel PCA
+
+In this task we have implemented kernel PCA 
+
+Task 1.1: Derive the formula for calculating the kth kernel principal components for a new observation
+
+
+
+
+
+
+
+
+
