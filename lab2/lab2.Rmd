@@ -1,10 +1,8 @@
 ---
-title: "Statistical Learning, LAB 2"
-output:
-  pdf_document: default
-  html_document: default
-date: "TBA"
+title: "Statistical Learning, LAB 1"
 author: "Gustav Felländer(gufe0008), Axel Eriksson(axer0005)"
+date: "2023-11-30"
+output: pdf_document
 ---
 
 ```{css, echo=FALSE}
@@ -21,18 +19,435 @@ img {
 }
 ```
 
+## Task 1
 
-## Task 1 About Kernel PCA
+```{R, warning=FALSE, message=FALSE}
 
-In this task we have implemented kernel PCA 
+# Function to generate elliptical data
+DGP_ellipse <- function(N = 50, seed = 8312){
+  set.seed(seed)
+  oval_fun <- function(x, a=1, b=0.5){b * sqrt(1 - (x / a)^2)}
+  
+  # Generate data for the first oval
+  x11 = runif(N, -1, 1)
+  x12 = c(oval_fun(x11[1:(.5 * N)]), -oval_fun(x11[(.5 * N + 1):N])) + rnorm(N, 0, 0.05)
+  X = cbind(x11, x12)
+  
+  # Generate data for the second oval
+  x21 = runif(N, -1.5, 1.5)
+  x22 = c(oval_fun(x21[1:(.5 * N)], a = 1.5, b = 0.75), -oval_fun(x21[(.5 * N + 1):N], a = 1.5,   b = 0.75)) + rnorm(N, 0, 0.05)
+  
+  X = rbind(X, cbind(x21, x22))
+  
+  # Rotate the data
+  Q = eigen(matrix(c(1, -4, -4, 1), 2, 2))$vectors
+  X = X %*% Q
+  
+  # Create the response variable
+  y = c(rep(1, N), rep(0, N))
+  d = cbind(y, X)
+  
+  return(d)
+}
+```
 
-Task 1.1: Derive the formula for calculating the kth kernel principal components for a new observation
+
+```{R, warning=FALSE, message=FALSE}
+# Generate elliptical data with 10 points
+N = 10
+d = DGP_ellipse(N)
+y = d[, 1]
+X = d[, -1]
+
+# Visualize the generated data
+plot(X, pch = 20, col = y + 2, xlab = "X1", ylab = "X2", asp = 1, cex = 3)
+```
+
+
+```{R, warning=FALSE, message=FALSE}
+#--- generate the data OVER ---#
+
+#--- tr_te_split ---#
+
+# Randomly sample 20% of the data for testing
+id = sample(1:(2 * N), N * 0.2)
+X_tr = X[-id, ]
+X_te = X[id, ]
+y_tr = y[-id]
+y_te = y[id]
+```
+
+```{R, warning=FALSE, message=FALSE}
+
+# Define a kernel function
+kernel_function <- function(x1, x2) {
+  result <- (t(x1) %*% x2)^2
+  return(result)
+}
+
+# Calculate the Gram matrix for the training data set
+calculate_gram_matrix <- function(X) {
+  n <- nrow(X)
+  gram_matrix <- matrix(0, n, n)
+  
+  for (i in 1:n) {
+    for (j in 1:n) {
+      gram_matrix[i, j] <- kernel_function(X[i, ], X[j, ])
+    }
+  }
+  
+  return(gram_matrix)
+}
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Calculate the Gram matrix for the training data set
+K = calculate_gram_matrix(X_tr)
+N = dim(K)[1]
+
+# Generate the C matrix
+C = matrix(1 / N, N, N)
+I = diag(1, N)
+
+# Obtains the centralized K* matrix
+KC = K - C %*% K - K %*% C + C %*% K %*% C
+
+# Get eigendecomposition of K*
+eig = eigen(KC)
+
+# Choose the third eigen vector/PC
+PC3_tr = eig$vectors[, 3]
+lambda3_tr = eig$values[3]
+
+# Plot the third principal component
+plot(PC3_tr, rep(0, N), pch = 20, col = y + 2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Test on the testing data
+
+# Create a matrix for new observations
+X_new = matrix(0, N, 2)
+
+# Generate the vector of the kernel functions
+for (obs in 1:dim(X_te)[2]) {
+  for (i in 1:N) {
+    X_new[i, obs] = kernel_function(X_tr[i, ], X_te[obs, ])
+  }
+}
+
+# Calculate the new observations
+x_new1 = lambda3_tr^-0.5 * t(PC3_tr) %*% (I - C) %*% (X_new[, 1] - 1 / N * K %*% rep(1, N))
+x_new2 = lambda3_tr^-0.5 * t(PC3_tr) %*% (I - C) %*% (X_new[, 2] - 1 / N * K %*% rep(1, N))
+
+# Plot the new observations
+points(x_new1, 0, pch = 20, col = 5, cex = 3)
+points(x_new2, 0, pch = 20, col = 1, cex = 3)
+
+
+```
+
+
+## Task 2
+
+```{R, warning=FALSE, message=FALSE}
+# Load necessary libraries
+library(MASS)
+library(kernlab)
+
+# Load the Boston dataset
+X = data(Boston)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Define the Gaussian kernel function
+kernel_function <- function(x1, x2, sigma) {
+  result <- exp(-sqrt(sum((x1 - x2)^2)) / (2 * sigma^2))
+  return(result)
+}
+
+# Function to calculate the Gram matrix
+calculate_gram_matrix <- function(X, sigma) {
+  n <- nrow(X)
+  gram_matrix <- matrix(0, n, n)
+  
+  for (i in 1:n) {
+    for (j in 1:n) {
+      gram_matrix[i, j] <- kernel_function(X[i,], X[j,], sigma)
+    }
+  }
+  return(gram_matrix)
+}
+
+# Function to predict using Kernel Ridge Regression
+predictKRR <- function(K, trainX, trainY, X, lambda, sigma) {
+  # Calculate kappa-vector
+  N = dim(K)[1]
+  kappa <- matrix(0, nrow(K), 1)
+  for (i in 1:N) {
+    kappa[i] = kernel_function(trainX[i,], X, sigma)
+  }
+  
+  # Predict y_hat
+  y_hat = trainY %*% solve(K + diag(lambda, nrow(K))) %*% kappa
+  return(y_hat)
+}
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Divide into training and test sets
+set.seed(2020)
+train_indices <- sample(1:nrow(Boston), 400)
+train_data <- Boston[train_indices, ]
+test_data <- Boston[-train_indices, ]
+trainY <- train_data$medv
+trainX <- train_data[, !(names(train_data) %in% c("medv"))]
+testY <- test_data$medv
+testX <- test_data[, !(names(test_data) %in% c("medv"))]
+trainX <- as.matrix(trainX)
+testX <- as.matrix(testX)
+
+# Task 2: Kernel Ridge Regression with specified lambda and sigma
+lambda = 0.1
+sigma = 0.001
+
+# Calculate the Gram matrix
+K = calculate_gram_matrix(trainX, sigma)
+
+# Initialize prediction vector
+pred <- matrix(0, length(testY), 1)
+
+# Make predictions for each test data point
+for (k in 1:length(testY)) {
+  pred[k] = predictKRR(K, trainX, trainY, testX[k,], lambda, sigma)
+}
+
+# Calculate and print the root mean squared error (RMSE) on the test data
+rmse = sqrt(mean((pred - testY)^2))
+cat("RMSE on test data:", rmse, "\n")
+```
 
 
 
+```{R, warning=FALSE, message=FALSE}
+# Task 3: Implementing k-fold cross-validation for kernel ridge regression
+
+# Function for doing k-fold cross-validation
+k_fold <- function(trainX, trainY, k, lambda, sigma) {
+  
+  # Shuffle indices to create random folds
+  order <- sample(1:nrow(trainX))
+  
+  # Calculate the number of points in each fold
+  num_points <- round(nrow(trainX) / k)
+  
+  # Initialize vector to store RMSE values for each fold
+  rmse <- numeric(k)
+  
+  for (fold in 0:(k - 1)) {
+    # Determine the start and end indices for the current fold
+    start_ind = fold * num_points + 1
+    end_ind <- (fold + 1) * num_points
+    
+    # Extract indices for the testing set
+    testing_idx <- order[start_ind:end_ind]
+    
+    # Split the dataset into training and testing sets
+    test_setX <- trainX[testing_idx,]
+    training_setX <- trainX[-testing_idx,]
+    
+    test_setY <- trainY[testing_idx]
+    training_setY <- trainY[-testing_idx]
+    
+    # Evaluate the model
+    K = calculate_gram_matrix(training_setX, sigma)
+    pred <- matrix(0, dim(test_setX)[1], 1)
+    for (i in 1:dim(test_setX)[1]) {
+      pred[i] = predictKRR(K, training_setX, training_setY, test_setX[i,], lambda, sigma)
+    }
+    
+    # Calculate the root mean squared error for the current fold
+    rmse[fold] <- sqrt(mean((pred - test_setY)^2))
+  }
+  return(rmse)
+}
+```
+
+
+```{R, warning=FALSE, message=FALSE}
+
+## Normalize --------------------------
+
+# Load the Boston dataset and normalize the features
+data(Boston)
+X <- scale(as.matrix(Boston))
+
+# Set seed for reproducibility
+set.seed(2020)
+
+# Randomly select 400 indices for training
+train_indices <- sample(1:nrow(X), 400)
+
+# Create training and testing datasets
+train_data <- X[train_indices, ]
+test_data <- X[-train_indices, ]
+
+# Extract target variables and feature matrices for training and testing
+trainY <- train_data[,14]
+trainX <- train_data[,1:13]
+testY <- test_data[,14]
+testX <- test_data[,1:13]
+```
+
+
+```{R, warning=FALSE, message=FALSE}
+# -------------------------------
+
+# Define a grid of hyperparameters (lambda and sigma)
+lambda_values = c(0.1, 0.01, 0.001)
+sigma_values = c(0.1, 0.01, 0.001)
+
+# Generate all combinations of hyperparameters
+comb = expand.grid(lambda_values, sigma_values)
+
+# Initialize a matrix to store RMSE values for each combination
+rmse_comb = matrix(0, nrow(comb), 1)
+
+# Perform k-fold cross-validation for each hyperparameter combination
+for (i in 1:nrow(comb)) {
+  cat(i, "/", nrow(comb), "\r")
+  
+  # Call the k_fold function to get RMSE values for the current combination
+  rmse <- k_fold(trainX, trainY, 10, comb[i,1], comb[i,2])
+  
+  # Store the average RMSE for the current combination
+  rmse_comb[i] <- mean(rmse)
+}
+
+# Plot the RMSE values for each combination
+plot(rmse_comb)
+
+# Identify the index of the combination with the lowest RMSE
+idx <- which.min(rmse_comb)
+
+# Print the best combination of hyperparameters
+cat("Best combination: lambda =", comb[idx,1], ", sigma =", comb[idx,2], "\n")
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Test the model with the best hyperparameters on the test data
+pred <- matrix(0, length(testY), 1)
+K = calculate_gram_matrix(trainX, comb[idx,2])
+for (k in 1:length(testY)) {
+  pred[k] = predictKRR(K, trainX, trainY, testX[k,], comb[idx,1], comb[idx,2])
+}
+
+# Calculate and print the RMSE on the test data
+rmse = sqrt(mean((pred - testY)^2))
+cat("RMSE on test data:", rmse, "\n")
+
+```
 
 
 
+## Task 3
 
 
+```{R, warning=FALSE, message=FALSE}
+library(e1071)
+library(kernlab)
+library(caret)
+
+set.seed(8312)
+load('HWD.RData')
+X <- as.data.frame(data)
+n <- dim(X)[1]
+
+# Assuming the first column contains the target variable
+id <- sample(1:n, floor(0.8 * n)) 
+training <- X[id, ] 
+test <- X[-id, ] 
+
+training$V1 <- as.factor(training$V1)
+test$V1 <- as.factor(test$V1)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Using linear SVM model -> vanilladot
+svm_1 <- ksvm(V1 ~ ., data = training, kernel = 'vanilladot',kpar=list(), C = 0.001)
+
+pred <- predict(svm_1, newdata = test[,-1])
+conf_matrix <- confusionMatrix(pred, test$V1)
+print(conf_matrix$table)
+print(conf_matrix$overall)
+```
+
+```{R, warning=FALSE, message=FALSE}
+# Cross validation for the linear kernel
+
+slackness <- c(0.0001, 0.0005, 0.001, 0.005, 0.1, 1)
+grid <- expand.grid(C = slackness)
+
+cv <- trainControl(method = "cv",
+                   number = 10,
+                   verboseIter = TRUE
+                   )
+
+
+# Train the SVM model using the train function
+svm <- train(V1 ~ .,
+             data = training,
+             method = "svmLinear",
+             trControl = cv,
+             tuneGrid = grid)
+
+# Print the trained model
+print(svm)
+
+best_C <- svm$bestTune$C
+
+# Test on true test set
+svm_best <- ksvm(V1 ~ ., data = training, kernel = 'vanilladot',kpar=list(), C = best_C)
+pred <- predict(svm_best, newdata = test[,-1])
+conf_matrix <- confusionMatrix(pred, test$V1)
+print(conf_matrix)
+```
+
+
+```{R, warning=FALSE, message=FALSE}
+
+# Task 3.2: Do the same but using a nonlinear kernel
+
+slackness <- c(1)
+sigmas <- c(0.005, 0.1)
+combination = expand.grid(C=slackness, sigma=sigmas)
+
+cv <- trainControl(method = "cv",
+                   number = 10,
+                   verboseIter = TRUE
+)
+
+
+# Train the SVM model using the train function
+svm <- train(V1 ~ .,
+             data = training,
+             method = "svmRadial",
+             trControl = cv,
+             tuneGrid = combination)
+
+# Print the trained model
+print(svm)
+```
+
+
+
+```{R, warning=FALSE, message=FALSE}
+best <- svm$bestTune
+
+# Test on true test set
+svm_best <- ksvm(V1 ~ ., data = training, kernel = 'rbfdot',kpar=list(best$sigma), C = best$C)
+pred <- predict(svm_best, newdata = test[,-1])
+conf_matrix <- confusionMatrix(pred, test$V1)
+print(conf_matrix)
+```
 
