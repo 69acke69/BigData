@@ -21,6 +21,11 @@ img {
 
 ## Task 1
 
+*equation*
+
+
+
+First we generate the data that we want to classify by importing the already given function that does this.
 ```{R, warning=FALSE, message=FALSE}
 
 # Function to generate elliptical data
@@ -51,11 +56,11 @@ DGP_ellipse <- function(N = 50, seed = 8312){
 }
 ```
 
-
+Then we will show the data points in order to see that nothing has gone wrong and that we see the correct behavior, which seems to be the case.
 ```{R, warning=FALSE, message=FALSE}
 # Generate elliptical data with 10 points
 N = 10
-d = DGP_ellipse(N)
+d = DGP_ellipse(N, seed=my_seed)
 y = d[, 1]
 X = d[, -1]
 
@@ -63,12 +68,8 @@ X = d[, -1]
 plot(X, pch = 20, col = y + 2, xlab = "X1", ylab = "X2", asp = 1, cex = 3)
 ```
 
-
+After this step, we will randomly split the data into different data sets, i.e. the training set and a testing set that we use to validate the model.
 ```{R, warning=FALSE, message=FALSE}
-#--- generate the data OVER ---#
-
-#--- tr_te_split ---#
-
 # Randomly sample 20% of the data for testing
 id = sample(1:(2 * N), N * 0.2)
 X_tr = X[-id, ]
@@ -77,6 +78,7 @@ y_tr = y[-id]
 y_te = y[id]
 ```
 
+Now, we want to define a kernel function to use in our model. This is done in the first function below which calculates this. Secondly, we define a function to calculate all entries in the Gram matrix. This is done by for all entries calling the defined kernel function above.
 ```{R, warning=FALSE, message=FALSE}
 
 # Define a kernel function
@@ -100,6 +102,7 @@ calculate_gram_matrix <- function(X) {
 }
 ```
 
+After preparing all the necessary steps, we can now proceed to calculate the centralized Gram matrix $K^*$, and do an eigen decomposition of it in order to obtain the principal components(PCs) and plot the data along the third PC. As we can see in the plot, the data seem to be quite divided implying that classification using this method could work well.
 ```{R, warning=FALSE, message=FALSE}
 # Calculate the Gram matrix for the training data set
 K = calculate_gram_matrix(X_tr)
@@ -123,9 +126,9 @@ lambda3_tr = eig$values[3]
 plot(PC3_tr, rep(0, N), pch = 20, col = y + 2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
 ```
 
+Lastly, we test the model on the testing data that is still unseen. This is done by using the derived formula above. Which when added to the plot above we see that the new data is classified correctly.
 ```{R, warning=FALSE, message=FALSE}
 # Test on the testing data
-
 # Create a matrix for new observations
 X_new = matrix(0, N, 2)
 
@@ -141,8 +144,10 @@ x_new1 = lambda3_tr^-0.5 * t(PC3_tr) %*% (I - C) %*% (X_new[, 1] - 1 / N * K %*%
 x_new2 = lambda3_tr^-0.5 * t(PC3_tr) %*% (I - C) %*% (X_new[, 2] - 1 / N * K %*% rep(1, N))
 
 # Plot the new observations
-points(x_new1, 0, pch = 20, col = 5, cex = 3)
-points(x_new2, 0, pch = 20, col = 1, cex = 3)
+plot(PC3_tr, rep(0, N), pch = 20, col = y + 2, xlab = "Z3", ylab = "", asp = 1, cex = 3)
+points(x_new1, 0, pch = 17, col = y_te[1]+2, cex = 2)
+points(x_new2, 0, pch = 17, col = y_te[2]+2, cex = 2)
+legend("topright", legend = c("Training data", "Test points"), pch = c(20, 17), cex = 1.2)
 
 
 ```
@@ -150,6 +155,7 @@ points(x_new2, 0, pch = 20, col = 1, cex = 3)
 
 ## Task 2
 
+For this task our aim is to train a kernel ridge regression model. So, our first step is to load the relevant libraries and load the data set.
 ```{R, warning=FALSE, message=FALSE}
 # Load necessary libraries
 library(MASS)
@@ -159,6 +165,7 @@ library(kernlab)
 X = data(Boston)
 ```
 
+Just as in task 1, we now define our Gram matrix function and the kernel function as specified in the task as the Radial Basis Function(RBF). After this, we define a function that takes the different hyperparameters $\sigma$, and $\lambda$ and calculates a prediction $\hat y$ based on a data point $X$.
 ```{R, warning=FALSE, message=FALSE}
 # Define the Gaussian kernel function
 kernel_function <- function(x1, x2, sigma) {
@@ -194,6 +201,7 @@ predictKRR <- function(K, trainX, trainY, X, lambda, sigma) {
 }
 ```
 
+Below, we now split the data set into a training set and a test set, and then we predict all the test data points and calculate the resulting RSME value.
 ```{R, warning=FALSE, message=FALSE}
 # Divide into training and test sets
 set.seed(2020)
