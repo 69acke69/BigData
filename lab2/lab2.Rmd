@@ -1,5 +1,5 @@
 ---
-title: "Statistical Learning, LAB 1"
+title: "Statistical Learning, LAB 2"
 author: "Gustav Felländer(gufe0008), Axel Eriksson(axer0005)"
 date: "2023-11-30"
 output: pdf_document
@@ -21,9 +21,34 @@ img {
 
 ## Task 1
 
-*equation*
+#Task1.1 
+Derive the formula of calculation the $k$th kernel principal component for a new observation.
+
+Normalized eigenvector 
+
+$$
+e = \frac{\phi^Tu}{\sqrt{(\phi^Tu)^T\phi^Tu}} = \frac{\phi^Tu}{\sqrt{u^T\phi\phi^Tu}} = \frac{\phi^Tu}{\sqrt{\lambda}\sqrt{u^Tu}} = \frac{1}{\sqrt{\lambda}}\phi^Tu
+$$
+Then for a new observation we have 
+$$
+e^T\phi(x_{new}) = \frac{1}{\sqrt{\lambda}}u^T\phi\phi^*(x_{new}) = \frac{1}{\sqrt{\lambda}}u^T\phi (\phi^*{x_{new}}- n^{-1}\phi^{T*}1_N) = \frac{1}{\sqrt{\lambda}}u^T(I-C)(\phi\phi(x_{new}) - n^{-1}\phi\phi^T1_n) = \frac{1}{\sqrt(\lambda)}(I-C)u^T(\kappa(x_1,x_{new}),...,\kappa(x_n,x_{new}))^T - n^{-1}k1_n)
+$$
+Where we have used the following formulas 
+$$
+\phi(x_new) = \phi(x_{new}) - n^{-1} \phi^T1_N
+$$
+
+$$
+\phi^*_{new}= (I-C)\phi_{new}
+$$
+$$
+\phi\phi^T = K
+$$
 
 
+$$
+\phi\phi(x_{new})) = \kappa(x_1,x_{new})^T
+$$
 
 First we generate the data that we want to classify by importing the already given function that does this.
 ```{R, warning=FALSE, message=FALSE}
@@ -165,7 +190,7 @@ library(kernlab)
 X = data(Boston)
 ```
 
-Just as in task 1, we now define our Gram matrix function and the kernel function as specified in the task as the Radial Basis Function(RBF). After this, we define a function that takes the different hyperparameters $\sigma$, and $\lambda$ and calculates a prediction $\hat y$ based on a data point $X$.
+Just as in task 1, we now define our Gram matrix function and the kernel function as specified in the task as the Radial Basis Function(RBF). After this, we define a function that takes the different hyper parameters $\sigma$, and $\lambda$ and calculates a prediction $\hat y$ based on a data point $X$.
 ```{R, warning=FALSE, message=FALSE}
 # Define the Gaussian kernel function
 kernel_function <- function(x1, x2, sigma) {
@@ -236,7 +261,7 @@ cat("RMSE on test data:", rmse, "\n")
 ```
 
 
-
+Our function that does the k-fold cross validation. 
 ```{R, warning=FALSE, message=FALSE}
 # Task 3: Implementing k-fold cross-validation for kernel ridge regression
 
@@ -282,6 +307,8 @@ k_fold <- function(trainX, trainY, k, lambda, sigma) {
 ```
 
 
+
+Load the data set, then we use the function scale to normalize the features. Finally we split the data set randomly into a training and testing set. 
 ```{R, warning=FALSE, message=FALSE}
 
 ## Normalize --------------------------
@@ -308,6 +335,7 @@ testX <- test_data[,1:13]
 ```
 
 
+Generate all the different combinations of the necessary hyper parameters. With these parameters we do a cross validation to determine which pair that provides the best performance. 
 ```{R, warning=FALSE, message=FALSE}
 # -------------------------------
 
@@ -342,6 +370,7 @@ idx <- which.min(rmse_comb)
 cat("Best combination: lambda =", comb[idx,1], ", sigma =", comb[idx,2], "\n")
 ```
 
+Evaluate the model on the test data with the best hyperparameters. 
 ```{R, warning=FALSE, message=FALSE}
 # Test the model with the best hyperparameters on the test data
 pred <- matrix(0, length(testY), 1)
@@ -356,11 +385,13 @@ cat("RMSE on test data:", rmse, "\n")
 
 ```
 
+Comparing the results between task 2.2 and 2.3 we can see that normalizing the data and finding optimal hyper parameters has a positive impact on the result. 
 
+## Task 3: About SVM 
 
-## Task 3
+in this task we have solved the handwritten digit recognition problem using SVM.
 
-
+Split the data into a training and testing set. 
 ```{R, warning=FALSE, message=FALSE}
 library(e1071)
 library(kernlab)
@@ -380,6 +411,7 @@ training$V1 <- as.factor(training$V1)
 test$V1 <- as.factor(test$V1)
 ```
 
+Perform linear SVM 
 ```{R, warning=FALSE, message=FALSE}
 # Using linear SVM model -> vanilladot
 svm_1 <- ksvm(V1 ~ ., data = training, kernel = 'vanilladot',kpar=list(), C = 0.001)
@@ -390,6 +422,8 @@ print(conf_matrix$table)
 print(conf_matrix$overall)
 ```
 
+
+Here we do the cross validation for the linear kernel. To do this we first create the slackness vector which contain the values we want to evaluate. Then we create a one dimensional grid to be used in the training of the model. We also define a train control so that the SVM model does the cross validation. Finally we display the results and find the best hyperparameter.
 ```{R, warning=FALSE, message=FALSE}
 # Cross validation for the linear kernel
 
@@ -422,10 +456,12 @@ print(conf_matrix)
 ```
 
 
+Here we do the same thing as above but the differences is that we have to parameters so we have to create a 2 dimensional grid
 ```{R, warning=FALSE, message=FALSE}
 
 # Task 3.2: Do the same but using a nonlinear kernel
 
+#Slackness equal to one gives the best performance
 slackness <- c(1)
 sigmas <- c(0.005, 0.1)
 combination = expand.grid(C=slackness, sigma=sigmas)
@@ -448,7 +484,7 @@ print(svm)
 ```
 
 
-
+Then finally we test the model on the test set to verify that the model is performing well on unseen data. 
 ```{R, warning=FALSE, message=FALSE}
 best <- svm$bestTune
 
