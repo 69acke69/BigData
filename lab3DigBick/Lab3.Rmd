@@ -1,0 +1,47 @@
+---
+title: "Statistical Learning, LAB 3"
+author: "Gustav Felländer(gufe0008), Axel Eriksson(axer0005)"
+date: "2023-12-01"
+output: pdf_document
+---
+
+```{css, echo=FALSE}
+/* Set max height and scroll for code blocks */
+pre {
+  max-height: 500px;
+  overflow-y: auto;
+}
+/* Center the output images */
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+```
+
+## Task 1
+
+
+
+
+## Task 2
+
+$$
+w_1 = \begin{bmatrix} 0.072 & 0.072 & 0.071 & 0.071 & 0.071 & 0.167 & 0.167 & 0.071 & 0.167 & 0.071 \end{bmatrix} ^T
+$$
+
+Based on the figure in the specification we see that the model misclassifies the blue data points and we track the misclassified cases in the vector below
+$$\begin{bmatrix} 1 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 1 & 0 \end{bmatrix}$$
+
+\\
+\text{Calculate errors:} \quad & \text{my\_eps} = \mathbf{w}_1^T \cdot \text{classification} \\
+& \theta = \sqrt{\frac{\text{my\_eps}}{1 - \text{my\_eps}}} \\
+\\
+w_2 &= \text{numeric}(\text{length}(\mathbf{w}_1)) \\
+\text{for } (i & \text{ in } 1:\text{length}(\mathbf{w}_1)) \{ \\
+& \quad w_2[i] = w_1[i] \cdot \theta^{(1 - \text{classes}[i])} \\
+\} \\
+\\
+w_2 &= \frac{w_2}{\sum w_2} \\
+& \text{print}(\text{round}(w_2, 4))
+\end{align*}$$
