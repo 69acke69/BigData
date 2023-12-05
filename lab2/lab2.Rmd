@@ -1,7 +1,7 @@
 ---
 title: "Statistical Learning, LAB 2"
 author: "Gustav Felländer(gufe0008), Axel Eriksson(axer0005)"
-date: "2023-11-30"
+date: "2023-12-01"
 output: pdf_document
 ---
 
@@ -31,11 +31,15 @@ e = \frac{\phi^Tu}{\sqrt{(\phi^Tu)^T\phi^Tu}} = \frac{\phi^Tu}{\sqrt{u^T\phi\phi
 $$
 Then for a new observation we have 
 $$
-e^T\phi(x_{new}) = \frac{1}{\sqrt{\lambda}}u^T\phi\phi^*(x_{new}) = \frac{1}{\sqrt{\lambda}}u^T\phi (\phi^*{x_{new}}- n^{-1}\phi^{T*}1_N) = \frac{1}{\sqrt{\lambda}}u^T(I-C)(\phi\phi(x_{new}) - n^{-1}\phi\phi^T1_n) = \frac{1}{\sqrt(\lambda)}(I-C)u^T(\kappa(x_1,x_{new}),...,\kappa(x_n,x_{new}))^T - n^{-1}k1_n)
+e^T\phi(x_{new}) = \frac{1}{\sqrt{\lambda}}u^T\phi\phi^*(x_{new}) = \frac{1}{\sqrt{\lambda}}u^T\phi (\phi^*{x_{new}}- n^{-1}\phi^{T*}1_N) = 
+$$
+
+$$
+\frac{1}{\sqrt{\lambda}}u^T(I-C)(\phi\phi(x_{new}) - n^{-1}\phi\phi^T1_n) = \frac{1}{\sqrt(\lambda)}(I-C)u^T(\kappa(x_1,x_{new}),...,\kappa(x_n,x_{new}))^T - n^{-1}k1_n)
 $$
 Where we have used the following formulas 
 $$
-\phi(x_new) = \phi(x_{new}) - n^{-1} \phi^T1_N
+\phi(x_{new}) = \phi(x_{new}) - n^{-1} \phi^T1_N
 $$
 
 $$
@@ -47,7 +51,7 @@ $$
 
 
 $$
-\phi\phi(x_{new})) = \kappa(x_1,x_{new})^T
+\phi\phi(x_{new}) = \kappa(x_1,x_{new})^T
 $$
 
 First we generate the data that we want to classify by importing the already given function that does this.
@@ -85,6 +89,7 @@ Then we will show the data points in order to see that nothing has gone wrong an
 ```{R, warning=FALSE, message=FALSE}
 # Generate elliptical data with 10 points
 N = 10
+my_seed = 8312
 d = DGP_ellipse(N, seed=my_seed)
 y = d[, 1]
 X = d[, -1]
