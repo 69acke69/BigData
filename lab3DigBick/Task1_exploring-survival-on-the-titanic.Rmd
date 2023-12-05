@@ -305,6 +305,7 @@ All of the variables we care about should be taken care of and there should be n
 
 ```{r}
 md.pattern(full)
+save(full,file = 'full')
 ```
 
 Wow! We have finally finished treating all of the relevant missing values in the Titanic dataset which has included some fancy imputation with `mice`. We have also successfully created several new variables which we hope will help us build a model which reliably predicts survival. 
