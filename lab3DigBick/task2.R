@@ -4,7 +4,8 @@ rm(list = ls())
 w1 <- c(0.072, 0.072, 0.071, 0.071, 0.071, 0.167, 0.167, 0.071, 0.167, 0.071)
 
 # Train weak learner
-classification <- c(1, 1, 0, 0, 0, 1, 1, 0, 1, 0)
+#classification <- c(1, 1, 0, 0, 0, 1, 1, 0, 1, 0)
+classification <- c(0, 0, 1, 1, 1, 0, 0, 1, 0, 1)
 classes <- classification
 classes[which(classes == 1)] = 2
 

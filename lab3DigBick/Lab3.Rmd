@@ -1,7 +1,7 @@
 ---
 title: "Statistical Learning, LAB 3"
 author: "Gustav Felländer(gufe0008), Axel Eriksson(axer0005)"
-date: "2023-12-01"
+date: "2023-12-07"
 output: pdf_document
 ---
 
@@ -21,27 +21,96 @@ img {
 
 ## Task 1
 
+After reading through the work of Megan Risdal we imported her data set "full" into the R environment and set a seed for repeatability.
+
+```{R, warning=FALSE, message=FALSE}
+# Load the relevant packages
+library(randomForest)
+library(caret)
+
+set.seed(721)
+# Load the data set
+load("full")
+df <- as.data.frame(full)
+```
+
+However, some clean-up is needed for the data set, and therefore we removed some of the irrelevant columns and removed rows with NA values in the survived column. Finally, we checked that the dataset has no more NA values.
+```{R, warning=FALSE, message=FALSE}
+# Clean up the data set, remove Na values
+
+# Remove columns from data set
+columns_to_remove <- c("Deck", "PassengerId", "Ticket", "Cabin", "Surname", "Family", "Child")
+df <- df[, -which(names(df) %in% columns_to_remove)]
+
+# Remove rows with Survived NA values
+df <- df[-which(is.na(df$Survived)), ]
+df$Survived <- as.factor(df$Survived)
+
+
+# Check if df has NAs
+print(any(is.na(df)))
+```
+Then, we perform the train, test split of the data where we use 80% for training and 20% for validation.
+```{R, warning=FALSE, message=FALSE}
+# Train test split
+passengers <- nrow(df)
+id <- sample(1:passengers, 0.8*passengers)
+train <- df[id, ]
+test <- df[-id, ]
+```
+
+
+Now it is time for training, and fitting the random forest to the data. For this case we use 100 trees in our forest. Then, we show the results using the confusionMatrix() function in the caret library. Here we can see that the model seems to perform quite well with an accuracy of 88.8% and a kappa statistic of $0.762$.
+```{R, warning=FALSE, message=FALSE}
+# Train the actual model
+model <- randomForest(Survived~., data = train, 
+                       ntree = 100, importance = T)
+
+
+# Try on test set
+predictions <- predict(model, test)
+cm <- confusionMatrix(predictions, test$Survived)
+print(cm)
+```
+Lastly, we show the importances of each feature rounded to three decimal digits.
+```{R, warning=FALSE, message=FALSE}
+# Show the importance of each feature
+round(model$importance, 3)
+```
 
 
 
 ## Task 2
 
+In the second task we are asked to calculate the new weights in the Adaboost algorithm and lastly give second decision stump of the final model. So first we can see that the given weights from the first iteration is
 $$
-w_1 = \begin{bmatrix} 0.072 & 0.072 & 0.071 & 0.071 & 0.071 & 0.167 & 0.167 & 0.071 & 0.167 & 0.071 \end{bmatrix} ^T
+w_1 = \begin{bmatrix} 0.072 & 0.072 & 0.071 & 0.071 & 0.071 & 0.167 & 0.167 & 0.071 & 0.167 & 0.071 \end{bmatrix} ^T.
 $$
 
-Based on the figure in the specification we see that the model misclassifies the blue data points and we track the misclassified cases in the vector below
-$$\begin{bmatrix} 1 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 1 & 0 \end{bmatrix}$$
+Based on the figure in the specification we see that the model misclassifies the blue data points and we track the misclassified cases in the vector below as ones and correctly classified cases as zero.
 
-\\
-\text{Calculate errors:} \quad & \text{my\_eps} = \mathbf{w}_1^T \cdot \text{classification} \\
-& \theta = \sqrt{\frac{\text{my\_eps}}{1 - \text{my\_eps}}} \\
-\\
-w_2 &= \text{numeric}(\text{length}(\mathbf{w}_1)) \\
-\text{for } (i & \text{ in } 1:\text{length}(\mathbf{w}_1)) \{ \\
-& \quad w_2[i] = w_1[i] \cdot \theta^{(1 - \text{classes}[i])} \\
-\} \\
-\\
-w_2 &= \frac{w_2}{\sum w_2} \\
-& \text{print}(\text{round}(w_2, 4))
-\end{align*}$$
+$$\mathbf{1} = \begin{bmatrix} 1 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 1 & 0 \end{bmatrix}$$
+
+Now we can calculate the errors for this current classifier by 
+$$
+\begin{align*}
+  \epsilon_{(t)} &= \sum^N_{i=1} w_1^{(t)}\mathbf{1}_{f^{(t)}(\mathbf{x}_i)\neq y_i} \\
+  &= 0.355
+  \end{align*}
+$$
+and subsequently we can calculate the adjustment factor $\theta_{(t)}$ as
+$$
+  \theta_{(t)} = \sqrt{\frac{\epsilon_{(t)}}{1 - \epsilon_{(t)}}} = 0742 < 1.
+$$
+Lastly, we can perform the update step to obtain the new vector of weight by using
+
+$$
+  w_i^{(t+1)} = w_i^{(t)} \theta_{(t)}^{1 - |f^{(t)}(\mathbf{x}_i) - y_i|}
+$$
+which yields,
+$$
+  w^{(t+1)} = \begin{bmatrix} 0.0558, 0.0558, 0.1, 0.1, 0.1, 0.1295, 0.1295, 0.1, 0.1295, 0.1 \end{bmatrix}
+$$
+Now, we can get the second decision stump in the final model which is
+
+
