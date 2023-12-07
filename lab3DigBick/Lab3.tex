@@ -1,0 +1,291 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Statistical Learning, LAB 3},
+  pdfauthor={Gustav Felländer(gufe0008), Axel Eriksson(axer0005)},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Statistical Learning, LAB 3}
+\author{Gustav Felländer(gufe0008), Axel Eriksson(axer0005)}
+\date{2023-12-07}
+
+\begin{document}
+\maketitle
+
+\hypertarget{task-1}{%
+\subsection{Task 1}\label{task-1}}
+
+After reading through the work of Megan Risdal we imported her data set
+``full'' into the R environment and set a seed for repeatability.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Load the relevant packages}
+\FunctionTok{library}\NormalTok{(randomForest)}
+\FunctionTok{library}\NormalTok{(caret)}
+
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{721}\NormalTok{)}
+\CommentTok{\# Load the data set}
+\FunctionTok{load}\NormalTok{(}\StringTok{"full"}\NormalTok{)}
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(full)}
+\end{Highlighting}
+\end{Shaded}
+
+However, some clean-up is needed for the data set, and therefore we
+removed some of the irrelevant columns and removed rows with NA values
+in the survived column. Finally, we checked that the dataset has no more
+NA values.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Clean up the data set, remove Na values}
+
+\CommentTok{\# Remove columns from data set}
+\NormalTok{columns\_to\_remove }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"Deck"}\NormalTok{, }\StringTok{"PassengerId"}\NormalTok{, }\StringTok{"Ticket"}\NormalTok{, }\StringTok{"Cabin"}\NormalTok{, }\StringTok{"Surname"}\NormalTok{, }\StringTok{"Family"}\NormalTok{, }\StringTok{"Child"}\NormalTok{)}
+\NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ df[, }\SpecialCharTok{{-}}\FunctionTok{which}\NormalTok{(}\FunctionTok{names}\NormalTok{(df) }\SpecialCharTok{\%in\%}\NormalTok{ columns\_to\_remove)]}
+
+\CommentTok{\# Remove rows with Survived NA values}
+\NormalTok{df }\OtherTok{\textless{}{-}}\NormalTok{ df[}\SpecialCharTok{{-}}\FunctionTok{which}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{Survived)), ]}
+\NormalTok{df}\SpecialCharTok{$}\NormalTok{Survived }\OtherTok{\textless{}{-}} \FunctionTok{as.factor}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{Survived)}
+
+
+\CommentTok{\# Check if df has NAs}
+\FunctionTok{print}\NormalTok{(}\FunctionTok{any}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(df)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] FALSE
+\end{verbatim}
+
+Then, we perform the train, test split of the data where we use 80\% for
+training and 20\% for validation.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Train test split}
+\NormalTok{passengers }\OtherTok{\textless{}{-}} \FunctionTok{nrow}\NormalTok{(df)}
+\NormalTok{id }\OtherTok{\textless{}{-}} \FunctionTok{sample}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\NormalTok{passengers, }\FloatTok{0.8}\SpecialCharTok{*}\NormalTok{passengers)}
+\NormalTok{train }\OtherTok{\textless{}{-}}\NormalTok{ df[id, ]}
+\NormalTok{test }\OtherTok{\textless{}{-}}\NormalTok{ df[}\SpecialCharTok{{-}}\NormalTok{id, ]}
+\end{Highlighting}
+\end{Shaded}
+
+Now it is time for training, and fitting the random forest to the data.
+For this case we use 100 trees in our forest. Then, we show the results
+using the confusionMatrix() function in the caret library. Here we can
+see that the model seems to perform quite well with an accuracy of
+88.8\% and a kappa statistic of \(0.762\).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Train the actual model}
+\NormalTok{model }\OtherTok{\textless{}{-}} \FunctionTok{randomForest}\NormalTok{(Survived}\SpecialCharTok{\textasciitilde{}}\NormalTok{., }\AttributeTok{data =}\NormalTok{ train, }
+                       \AttributeTok{ntree =} \DecValTok{100}\NormalTok{, }\AttributeTok{importance =}\NormalTok{ T)}
+
+
+\CommentTok{\# Try on test set}
+\NormalTok{predictions }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(model, test)}
+\NormalTok{cm }\OtherTok{\textless{}{-}} \FunctionTok{confusionMatrix}\NormalTok{(predictions, test}\SpecialCharTok{$}\NormalTok{Survived)}
+\FunctionTok{print}\NormalTok{(cm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction   0   1
+##          0 105  17
+##          1   4  53
+##                                           
+##                Accuracy : 0.8827          
+##                  95% CI : (0.8263, 0.9259)
+##     No Information Rate : 0.6089          
+##     P-Value [Acc > NIR] : 3.712e-16       
+##                                           
+##                   Kappa : 0.7452          
+##                                           
+##  Mcnemar's Test P-Value : 0.008829        
+##                                           
+##             Sensitivity : 0.9633          
+##             Specificity : 0.7571          
+##          Pos Pred Value : 0.8607          
+##          Neg Pred Value : 0.9298          
+##              Prevalence : 0.6089          
+##          Detection Rate : 0.5866          
+##    Detection Prevalence : 0.6816          
+##       Balanced Accuracy : 0.8602          
+##                                           
+##        'Positive' Class : 0               
+## 
+\end{verbatim}
+
+Lastly, we show the importances of each feature rounded to three decimal
+digits.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Show the importance of each feature}
+\FunctionTok{round}\NormalTok{(model}\SpecialCharTok{$}\NormalTok{importance, }\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##               0     1 MeanDecreaseAccuracy MeanDecreaseGini
+## Pclass    0.030 0.074                0.047           23.053
+## Name     -0.004 0.008                0.001           38.762
+## Sex       0.083 0.106                0.092           43.345
+## Age       0.001 0.012                0.005           32.773
+## SibSp     0.005 0.002                0.004            5.700
+## Parch     0.002 0.007                0.004            4.831
+## Fare      0.032 0.049                0.038           43.662
+## Embarked  0.000 0.009                0.003            6.188
+## Title     0.081 0.101                0.088           53.535
+## Fsize     0.017 0.009                0.013           11.627
+## FsizeD    0.013 0.015                0.014            8.961
+## Mother    0.001 0.001                0.001            1.566
+\end{verbatim}
+
+\hypertarget{task-2}{%
+\subsection{Task 2}\label{task-2}}
+
+In the second task we are asked to calculate the new weights in the
+Adaboost algorithm and lastly give second decision stump of the final
+model. So first we can see that the given weights from the first
+iteration is \[
+w_1 = \begin{bmatrix} 0.072 & 0.072 & 0.071 & 0.071 & 0.071 & 0.167 & 0.167 & 0.071 & 0.167 & 0.071 \end{bmatrix} ^T.
+\]
+
+Based on the figure in the specification we see that the model
+misclassifies the blue data points and we track the misclassified cases
+in the vector below as ones and correctly classified cases as zero.
+
+\[
+\mathbf{1} = \begin{bmatrix} 1 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 1 & 0 \end{bmatrix}
+\]
+
+Now we can calculate the errors for this current classifier by
+
+\[
+  \epsilon_{(t)} = \sum^N_{i=1} w_1^{(t)} \mathbf{1}_{f^{(t)} (\mathbf{x}_i) \neq y_i}
+  = 0.355
+\]
+
+and subsequently we can calculate the adjustment factor \(\theta_{(t)}\)
+as \[
+  \theta_{(t)} = \sqrt{\frac{\epsilon_{(t)}}{1 - \epsilon_{(t)}}} = 0.742 < 1.
+\] Lastly, we can perform the update step to obtain the new vector of
+weight by using
+
+\[
+  w_i^{(t+1)} = w_i^{(t)} \theta_{(t)}^{1 - |f^{(t)}(\mathbf{x}_i) - y_i|}
+\] which yields, \[
+  w^{(t+1)} = \begin{bmatrix} 0.0558, 0.0558, 0.1, 0.1, 0.1, 0.1295, 0.1295, 0.1, 0.1295, 0.1 \end{bmatrix}
+\] Now, we can get the weight of the second decision stump in the final
+model which is \[
+  \log{(\frac{1}{\theta_2})} = \log{(\frac{1}{0.742})} = 0.293.
+\]
+
+\end{document}

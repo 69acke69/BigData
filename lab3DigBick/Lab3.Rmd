@@ -89,18 +89,21 @@ $$
 
 Based on the figure in the specification we see that the model misclassifies the blue data points and we track the misclassified cases in the vector below as ones and correctly classified cases as zero.
 
-$$\mathbf{1} = \begin{bmatrix} 1 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 1 & 0 \end{bmatrix}$$
+$$
+\mathbf{1} = \begin{bmatrix} 1 & 1 & 0 & 0 & 0 & 1 & 1 & 0 & 1 & 0 \end{bmatrix}
+$$
 
 Now we can calculate the errors for this current classifier by 
+
 $$
-\begin{align*}
-  \epsilon_{(t)} &= \sum^N_{i=1} w_1^{(t)}\mathbf{1}_{f^{(t)}(\mathbf{x}_i)\neq y_i} \\
-  &= 0.355
-  \end{align*}
+  \epsilon_{(t)} = \sum^N_{i=1} w_1^{(t)} \mathbf{1}_{f^{(t)} (\mathbf{x}_i) \neq y_i}
+  = 0.355
 $$
+
+
 and subsequently we can calculate the adjustment factor $\theta_{(t)}$ as
 $$
-  \theta_{(t)} = \sqrt{\frac{\epsilon_{(t)}}{1 - \epsilon_{(t)}}} = 0742 < 1.
+  \theta_{(t)} = \sqrt{\frac{\epsilon_{(t)}}{1 - \epsilon_{(t)}}} = 0.742 < 1.
 $$
 Lastly, we can perform the update step to obtain the new vector of weight by using
 
@@ -111,6 +114,9 @@ which yields,
 $$
   w^{(t+1)} = \begin{bmatrix} 0.0558, 0.0558, 0.1, 0.1, 0.1, 0.1295, 0.1295, 0.1, 0.1295, 0.1 \end{bmatrix}
 $$
-Now, we can get the second decision stump in the final model which is
+Now, we can get the weight of the second decision stump in the final model which is
+$$
+  \log{(\frac{1}{\theta_2})} = \log{(\frac{1}{0.742})} = 0.293.
+$$
 
 
